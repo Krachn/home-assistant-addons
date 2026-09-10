@@ -10,24 +10,23 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json first
 COPY ha-puppet/package*.json ./
 
-# Skip Puppeteer's Chrome download since we use system Chromium
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
-# Ensure a clean state before installing
 RUN npm ci --omit=dev
 
-# Work around npm arborist bug that skips sharp's libvips shared dependency
-# (npm/cli#9238) — forces the actual .so file that sharp needs to install
-RUN npm install --no-save @img/sharp-libvips-linux-x64
+# Force-include optional deps for sharp, matching the exact
+# locked version instead of installing a separate package at latest
+RUN npm install --no-save --include=optional sharp
 
-# Copy the rest of the project files
+# Fail loudly at build time if the expected .so still isn't there,
+# instead of only finding out at runtime
+RUN find /app/node_modules/@img -maxdepth 2 -name 'libvips-cpp.so*' | tee /tmp/libvips-check.log && \
+    test -s /tmp/libvips-check.log
+
 COPY ha-puppet/ .
 
-# Run the application
 CMD ["node", "http.js"]
