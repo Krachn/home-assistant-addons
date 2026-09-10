@@ -22,6 +22,10 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 # Ensure a clean state before installing
 RUN npm ci --omit=dev
 
+# Work around npm arborist bug that skips sharp's libvips shared dependency
+# (npm/cli#9238) — forces the actual .so file that sharp needs to install
+RUN npm install --no-save @img/sharp-libvips-linux-x64
+
 # Copy the rest of the project files
 COPY ha-puppet/ .
 
