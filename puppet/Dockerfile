@@ -18,14 +18,13 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 RUN npm ci --omit=dev
 
-# Force the linux-x64 sharp/libvips binaries explicitly, since npm ci's
-# lockfile-only resolution appears to be missing this platform entirely
 RUN npm install --no-save --os=linux --cpu=x64 sharp
 
-# Fail the build loudly if it's still missing, rather than failing at runtime
-RUN echo "--- contents of @img ---" && ls -la /app/node_modules/@img && \
-    find /app/node_modules/@img -maxdepth 2 -name 'libvips-cpp.so*' | tee /tmp/libvips-check.log && \
-    test -s /tmp/libvips-check.log
+# Corrected: no depth limit, and print the whole package contents too
+RUN echo "--- sharp-libvips-linux-x64 contents ---" && \
+    find /app/node_modules/@img/sharp-libvips-linux-x64 -type f && \
+    echo "--- looking for the .so file ---" && \
+    find /app/node_modules/@img -name 'libvips-cpp.so*'
 
 COPY ha-puppet/ .
 
