@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.6.1 
+- Fix SHARP
+
 ## 2.6.0
 
 - Fix corrupted 24-bit BMP output for viewport widths not divisible by 4
